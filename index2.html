@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>英語意味順ドリル</title>
+    <title>英語 文整序問題ドリル</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
     <script src="quizData.js"></script> 
 
     <style>
-        /* 基本設定 - index1のスタイルを想定してフラット/シンプルに刷新 */
+        /* 基本設定 - 前回の設定を維持 */
         :root {
             --primary-color: #007bff; /* Blue */
             --secondary-color: #6c757d; /* Gray */
@@ -42,7 +43,7 @@
             padding: var(--container-padding);
             padding-top: calc(var(--container-padding) + 40px);
             border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* コンテナの影を強調 */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
             text-align: center;
             min-height: 500px;
             display: flex;
@@ -67,13 +68,13 @@
             display: none !important;
         }
 
-        /* 共通ボタン - フラットデザインに簡素化 */
+        /* 共通ボタン */
         .btn {
             padding: 12px 25px; 
             font-size: 1.1rem; 
             font-weight: 500;
             color: var(--light-text-color);
-            background: var(--primary-color); /* ソリッドカラーに変更 */
+            background: var(--primary-color); 
             border: 1px solid var(--primary-color);
             border-radius: var(--border-radius);
             cursor: pointer;
@@ -86,7 +87,7 @@
 
         .btn:hover {
             transform: translateY(-1px);
-            background-color: #0056b3; /* 濃い色に */
+            background-color: #0056b3; 
             border-color: #0056b3;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
@@ -100,7 +101,7 @@
             color: white;
             padding: 8px 15px;
             font-size: 0.9rem;
-            border-radius: 4px; /* 小さく */
+            border-radius: 4px; 
             border: none;
             cursor: pointer;
             z-index: 10;
@@ -129,24 +130,23 @@
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s, opacity 0.3s;
             box-shadow: var(--box-shadow);
-            margin: 5px; /* マージンを維持 (gapとの併用) */
+            margin: 5px; 
         }
         .category-button:hover {
              background-color: #117a8b;
              border-color: #117a8b;
         }
         
-        /* --- ここから変更した設定 --- */
+        /* カテゴリリストの3列グリッド配置 (前回修正) */
         #category-list {
-            display: grid; /* FlexboxからGridへ変更 */
-            grid-template-columns: repeat(3, 1fr); /* 3列均等幅 */
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
             gap: 10px;
             margin-top: 20px;
         }
-        /* --- 変更した設定はここまで --- */
         
         .back-link {
-            background: var(--incorrect-color); /* 「ゲーム選択に戻る」ボタンの色を赤色に */
+            background: var(--incorrect-color); 
             border-color: var(--incorrect-color);
             margin-top: 10px;
         }
@@ -177,7 +177,7 @@
             font-size: 1.4rem;
             margin-bottom: 30px;
             padding: 15px;
-            background-color: #e9ecef; /* ライトグレーに変更 */
+            background-color: #e9ecef; 
             border-radius: 8px;
             width: 100%;
             box-sizing: border-box;
@@ -188,7 +188,7 @@
         /* 単語タイルコンテナ */
         .word-box {
             min-height: 60px;
-            border: 2px dashed #adb5bd; /* 罫線の色を変更 */
+            border: 2px dashed #adb5bd; 
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 20px;
@@ -209,7 +209,7 @@
         /* 単語タイル（選択肢）のスタイル変更 */
         .word-item {
             cursor: pointer;
-            background-color: #343a40; /* ダークグレー */
+            background-color: #343a40; 
             color: var(--light-text-color);
             padding: 8px 12px;
             border-radius: 4px;
@@ -217,7 +217,7 @@
             font-weight: normal; 
             font-size: 1.0rem; 
             border: 1px solid #212529;
-            box-shadow: none; /* シャドウ削除 */
+            box-shadow: none; 
         }
 
         .word-item:active {
@@ -242,7 +242,7 @@
         .correct { color: var(--correct-color); font-weight: bold; font-size: 1.3rem; }
         .incorrect { color: var(--incorrect-color); font-weight: bold; font-size: 1.3rem; }
 
-        /* --- 結果テーブルのスタイル追加/修正 --- */
+        /* --- 結果テーブルのスタイル --- */
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -250,12 +250,12 @@
             font-size: 0.95rem;
         }
         .results-table th, .results-table td {
-            border: 1px solid #dee2e6; /* 罫線の色変更 */
+            border: 1px solid #dee2e6; 
             padding: 10px 5px;
             text-align: center;
         }
         .results-table th {
-            background-color: #e9ecef; /* ヘッダの背景色変更 */
+            background-color: #e9ecef; 
             font-weight: bold;
         }
         .result-correct-text {
@@ -267,9 +267,8 @@
             font-weight: bold;
         }
         .results-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa; /* 交互の背景色変更 */
+            background-color: #f8f9fa; 
         }
-        /* 結果表示の色をセルに直接適用 */
         .results-table .result-correct-cell {
             color: var(--correct-color);
             font-weight: bold;
@@ -290,9 +289,9 @@
             .word-item { padding: 6px 10px; font-size: 0.9rem; }
             .btn, .category-button { padding: 10px 20px; font-size: 1rem; }
             
-            /* --- レスポンシブ対応の追加 --- */
+            /* スマホサイズでは2列表示 */
             #category-list {
-                grid-template-columns: repeat(2, 1fr); /* スマホサイズでは2列表示 */
+                grid-template-columns: repeat(2, 1fr); 
             }
         }
     </style>
@@ -306,7 +305,7 @@
         
         <p style="margin-top: -10px;">「意味順ドリル」</p>
 
-        <p>挑戦したいモードを選んでください。</p>
+        <p>挑戦したい**モード**を選んでください。</p>
         <div id="mode-selection">
             <button id="mode-practice" class="category-button">練習モード</button>
             <button id="mode-test" class="category-button">テストモード</button>
@@ -315,7 +314,7 @@
         <button id="back-to-mode-selection" class="btn back-link hidden">ゲーム選択に戻る</button>
 
         <div id="quiz-count-selection" class="hidden">
-            <p>次に、挑戦したい問題数を選んでください。</p>
+            <p>次に、挑戦したい**問題数**を選んでください。</p>
             <div id="count-list">
                 <button id="count-5" class="category-button">5問</button>
                 <button id="count-10" class="category-button">10問</button>
@@ -324,7 +323,7 @@
         </div>
 
         <div id="category-selection" class="hidden">
-            <p>次に、挑戦したいカテゴリを選んでください。</p>
+            <p>次に、挑戦したい**カテゴリ**を選んでください。</p>
             <div id="category-list">
                 </div>
         </div>
@@ -468,7 +467,7 @@
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = array[j], array[i];
+                [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
