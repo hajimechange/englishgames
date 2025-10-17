@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>英語 文整序問題ドリル</title>
+    <title>並べ替えドリル</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="quizData.js"></script> 
@@ -91,7 +91,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        /* 修正: トップメニューに戻るボタン（灰色、左上、index.htmlへのリンク）*/
+        /* 修正: トップメニューに戻るボタン（常に表示されるように hidden を削除）*/
         .top-left-button {
             position: absolute;
             top: 15px;
@@ -176,7 +176,7 @@
         
         /* 修正: ゲーム画面のタイトル（カテゴリ名）のフォントサイズを縮小 */
         #quiz-category-title {
-            font-size: 1.3rem; /* 小さく */
+            font-size: 1.3rem; 
             margin-bottom: 15px;
             font-weight: normal;
         }
@@ -189,7 +189,7 @@
 
         /* 修正: 日本語訳のフォントサイズを拡大 */
         .question-text {
-            font-size: 1.6rem; /* 拡大 */
+            font-size: 1.6rem; 
             margin-bottom: 30px;
             padding: 15px;
             background-color: #e9ecef; 
@@ -230,7 +230,7 @@
             border-radius: 4px;
             transition: background-color 0.15s, transform 0.1s;
             font-weight: normal; 
-            font-size: 1.1rem; /* 拡大 */
+            font-size: 1.1rem; 
             border: 1px solid #212529;
             box-shadow: none; 
         }
@@ -313,23 +313,17 @@
 </head>
 <body>
 
-    <a id="back-to-menu-button" class="top-left-button hidden" href="index.html">ゲーム選択に戻る</a>
+    <a id="back-to-menu-button" class="top-left-button" href="index.html">ゲーム選択に戻る</a>
     
     <div id="menu-container" class="container">
-        <h1>英語 文整序問題ドリル</h1>
+        <h1>並べ替えドリル</h1>
         
-        <p style="margin-top: -10px;">「意味順ドリル」</p>
-
-        <p>挑戦したい**モード**を選んでください。</p>
         <div id="mode-selection">
             <button id="mode-practice" class="category-button">練習モード</button>
             <button id="mode-test" class="category-button">テストモード</button>
         </div>
         
-        <button id="back-to-mode-selection" class="btn back-link hidden">モード選択に戻る</button>
-
         <div id="quiz-count-selection" class="hidden">
-            <p>次に、挑戦したい**問題数**を選んでください。</p>
             <div id="count-list">
                 <button id="count-5" class="category-button">5問</button>
                 <button id="count-10" class="category-button">10問</button>
@@ -381,7 +375,7 @@
 
     <script>
         // ==================================
-        // 定数 (修正: 制限時間を20秒に変更)
+        // 定数 (テストモードの制限時間)
         // ==================================
         const TIME_LIMIT_PER_QUIZ = 20;
         
@@ -394,7 +388,7 @@
         const backToMenuButton = document.getElementById('back-to-menu-button'); 
         const modePracticeButton = document.getElementById('mode-practice');
         const modeTestButton = document.getElementById('mode-test');
-        const backToModeSelectionButton = document.getElementById('back-to-mode-selection');
+        // 修正: backToModeSelectionButton は削除
         const quizCountSelection = document.getElementById('quiz-count-selection');
         const countList = document.getElementById('count-list');
         const categorySelection = document.getElementById('category-selection');
@@ -471,16 +465,15 @@
             if (screenId === 'menu') {
                 menuContainer.classList.remove('hidden');
                 quizContainer.classList.add('hidden');
-                // index.htmlに戻るボタンをメニューでは非表示
-                backToMenuButton.classList.add('hidden'); 
+                // 修正: backToMenuButton は HTML で hidden クラスが削除されたため、
+                // JSでの表示/非表示制御は不要だが、念のためメニュー表示時に処理をしない
                 resetMenuUI();
             } else if (screenId === 'quiz') {
                 menuContainer.classList.add('hidden');
                 quizContainer.classList.remove('hidden');
                 resultSummaryContainer.classList.add('hidden');
                 questionArea.classList.remove('hidden');
-                // index.htmlに戻るボタンをゲーム中は表示
-                backToMenuButton.classList.remove('hidden'); 
+                // backToMenuButton は常に表示
             }
         }
         
@@ -489,7 +482,7 @@
             modeTestButton.style.opacity = '1.0';
             quizCountSelection.classList.add('hidden');
             categorySelection.classList.add('hidden');
-            backToModeSelectionButton.classList.add('hidden');
+            // 修正: backToModeSelectionButton は削除
         }
 
         function createCategoryButtons() {
@@ -520,14 +513,16 @@
             modePracticeButton.style.opacity = mode === 'practice' ? '1.0' : '0.5';
             modeTestButton.style.opacity = mode === 'test' ? '1.0' : '0.5';
             
-            backToModeSelectionButton.classList.remove('hidden');
+            // 修正: モード選択に戻るボタンを削除したため、この処理は不要
 
-            // 修正: 練習モードでも問題数選択を表示
+            // 練習モードでも問題数選択を表示
             quizCountSelection.classList.remove('hidden');
             categorySelection.classList.add('hidden');
         }
 
         function resetToModeSelection() {
+            // 修正: モード選択に戻るボタンが削除され、常に「ゲーム選択に戻る」があるため、この関数は不要だが、
+            // 互換性のため currentMode のリセットと UI リセットのみ行う（今は使われていない）
             currentMode = '';
             selectedQuizCount = 0;
             resetMenuUI();
@@ -590,13 +585,13 @@
             const questionNumber = currentQuizIndex + 1;
             const totalQuestions = availableQuizzes.length;
             
-            // 修正: 何問中何問の数字を赤色にし、パターン名も表示
+            // 何問中何問の数字を赤色にし、パターン名も表示
             const categoryText = currentQuizData.category;
             quizCategoryTitle.innerHTML = `<span class="quiz-status-number">${questionNumber}</span>/<span class="quiz-status-number">${totalQuestions}</span> - ${categoryText}`;
             
             japaneseQuestion.textContent = currentQuizData.ja;
 
-            // 修正: 句読点（ピリオド, クエスチョンマーク, コンマ）をすべて独立した単語として扱う
+            // 句読点（ピリオド, クエスチョンマーク, コンマ）をすべて独立した単語として扱う
             const tempSentence = currentQuizData.en.replace(/([.?!,])/g, ' $1 ').trim();
             const rawWords = tempSentence.split(/\s+/).filter(word => word.length > 0);
             
@@ -713,7 +708,7 @@
                 }
             }
             
-            // 修正: 練習モードでも結果を保存する
+            // 結果を保存
             testResults.push({
                 question: currentQuizData.ja,
                 correctAnswer: correctAnswer,
@@ -731,7 +726,6 @@
 
         function nextQuiz() {
             if (currentQuizIndex === availableQuizzes.length - 1) {
-                // 修正: 練習モードでも結果一覧を表示
                 showResult();
                 return;
             }
@@ -742,7 +736,7 @@
 
         function showResult() {
             stopTimer();
-            backToMenuButton.classList.add('hidden'); // 結果画面ではメニューに戻るボタン（aタグ）を隠す
+            // backToMenuButton は常に表示されているため制御は不要
 
             questionArea.classList.add('hidden');
             resultSummaryContainer.classList.remove('hidden');
@@ -812,7 +806,7 @@
         // ==================================
         modePracticeButton.addEventListener('click', () => selectMode('practice'));
         modeTestButton.addEventListener('click', () => selectMode('test'));
-        backToModeSelectionButton.addEventListener('click', resetToModeSelection);
+        // 修正: backToModeSelectionButton のイベントリスナーを削除
         
         Array.from(countList.children).forEach(btn => {
             btn.addEventListener('click', () => {
@@ -824,7 +818,6 @@
         checkButton.addEventListener('click', () => checkAnswer(false));
         nextButton.addEventListener('click', nextQuiz);
         
-        // 結果画面からメニューに戻るボタンのロジック
         backToMenuFromResultButton.addEventListener('click', backToMenu);
 
         // タップ（クリック）移動のリスナー
