@@ -36,8 +36,8 @@
         .container {
             width: 100%;
             height: 100%;
-            max-width: 1024px; /* iPad portrait width */
-            max-height: 1366px; /* iPad portrait height */
+            max-width: 1024px;
+            max-height: 1366px;
             background-color: white;
             box-shadow: var(--box-shadow);
             border-radius: var(--border-radius);
@@ -135,10 +135,10 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            text-decoration: none; /* aタグ用に追記 */
-            display: inline-flex; /* aタグ用に追記 */
-            justify-content: center; /* aタグ用に追記 */
-            align-items: center; /* aタグ用に追記 */
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .btn:hover {
@@ -154,10 +154,9 @@
             background: #bdc3c7;
             font-size: 1.2rem;
             padding: 10px 20px;
-            color: #333; /* back-btnは明るい色に */
+            color: #333;
         }
         
-        /* #home-screen のメニューに戻るボタンの調整 */
         .back-to-menu-btn {
             position: absolute;
             left: 40px;
@@ -168,7 +167,6 @@
             font-size: 1.2rem;
             padding: 10px 20px;
         }
-        /* スマホ対応 */
         @media (max-width: 768px) {
             .back-to-menu-btn {
                 left: 20px;
@@ -302,15 +300,15 @@
                 <div id="session-selection" class="selection-container">
                     <h2>挑戦したいセッションを選んでください。</h2>
                     <div id="session-buttons" class="selection-grid grid-cols-2">
-                        <button class="btn" onclick="selectSession('Nouns')">名詞</button>
-                        <button class="btn" onclick="selectSession('Verbs')">動詞</button>
+                        <button class="btn" onclick="alert('名詞セッションは準備中です。意味順ドリルまたは文法項目別をお選びください。')">名詞</button>
+                        <button class="btn" onclick="alert('動詞セッションは準備中です。意味順ドリルまたは文法項目別をお選びください。')">動詞</button>
                         <button class="btn" onclick="selectSession('MeaningOrder')">意味順ドリル</button>
                         <button class="btn" onclick="selectSession('Grammar')">文法項目別</button> 
                     </div>
                 </div>
 
                 <div id="category-selection" class="selection-container hidden">
-                    <button class="btn back-btn" onclick="showSessionSelection()">セッション選択に戻る</button>
+                    <button class="btn back-btn" onclick="showSessionSelection()">セッション選択に戻る</button> 
                     <h2>挑戦したいカテゴリを選んでください。</h2>
                     <div id="category-buttons" class="selection-grid grid-cols-3">
                         </div>
@@ -393,11 +391,11 @@
         let currentMode = 'Practice';
         let currentSession = '';
         
-        // データソースをグローバルで定義（quizData.js, grammarQuizData.jsによって提供される）
-        const allQuizData = (typeof allQuizData !== 'undefined') ? allQuizData : [];
-        const grammarQuizData = (typeof grammarQuizData !== 'undefined') ? grammarQuizData : [];
+        // データソース (quizData.js と grammarQuizData.js に依存)
+        // データが存在しない場合を考慮し、空の配列で初期化
+        const allQuizData = (typeof allQuizData !== 'undefined') ? allQuizData : []; // 意味順ドリル
+        const grammarQuizData = (typeof grammarQuizData !== 'undefined') ? grammarQuizData : []; // 文法項目別
         
-        // データを保持するための変数
         let currentSessionData = [];
 
         function showScreen(screenId) {
@@ -422,18 +420,27 @@
             modeSelection.classList.add('hidden');
             showScreen('home');
         }
+        
+        function showSessionSelection() {
+            // セッション選択画面に戻る
+            sessionSelection.classList.remove('hidden');
+            categorySelection.classList.add('hidden');
+            modeSelection.classList.add('hidden');
+        }
 
-        // セッション選択
+        /**
+         * セッション選択 (名詞、動詞、意味順ドリル、文法項目別)
+         * @param {string} sessionKey 
+         */
         function selectSession(sessionKey) {
             currentSession = sessionKey;
             
             let quizData = [];
             if (sessionKey === 'MeaningOrder') {
-                quizData = allQuizData;
+                quizData = allQuizData; // quizData.js のデータ
             } else if (sessionKey === 'Grammar') {
-                quizData = grammarQuizData; // 文法ドリルデータを使用
+                quizData = grammarQuizData; // grammarQuizData.js のデータ
             } else {
-                // 名詞、動詞は現状データがないため、空のリスト
                 quizData = []; 
             }
 
@@ -442,7 +449,6 @@
             // カテゴリ選択画面のセットアップ
             const categories = [...new Set(currentSessionData.map(quiz => quiz.category))];
             
-            // カテゴリボタン生成
             categoryButtonsContainer.innerHTML = '';
             if (categories.length === 0) {
                  categoryButtonsContainer.innerHTML = '<p style="color: red; grid-column: 1 / -1;">問題データがありません。</p>';
@@ -451,7 +457,7 @@
             categories.forEach(categoryName => {
                 const button = document.createElement('button');
                 button.className = 'btn';
-                // 'パターン X: ' の部分を削除して表示（意味順ドリルカテゴリの場合）
+                // 'パターン X: ' の部分を削除して表示 (意味順ドリルカテゴリの場合)
                 let buttonText = categoryName.replace(/パターン \d+: /, '');
                 button.textContent = buttonText;
                 button.onclick = () => selectCategory(categoryName);
@@ -461,13 +467,17 @@
             sessionSelection.classList.add('hidden');
             categorySelection.classList.remove('hidden');
             
-            // セッション選択に戻るボタンのテキスト更新
-            categorySelection.querySelector('.back-btn').onclick = goHome;
+            // セッション選択に戻るボタンのロジックはHTML側のonclickで対応済み
         }
 
+        /**
+         * カテゴリ選択
+         * @param {string} categoryName 
+         */
         function selectCategory(categoryName) {
             currentQuizList = currentSessionData.filter(quiz => quiz.category === categoryName);
-            // 配列をシャッフルするヘルパー関数 (ここでは省略)
+            
+            // 配列をシャッフル
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -480,32 +490,35 @@
             // モード選択画面へ
             categorySelection.classList.add('hidden');
             modeSelection.classList.remove('hidden');
-            
-            // カテゴリ選択に戻るボタンのテキスト更新
-            modeSelection.querySelector('.back-btn').onclick = showCategorySelection;
         }
         
+        /**
+         * カテゴリ選択画面を表示
+         */
         function showCategorySelection() {
             sessionSelection.classList.add('hidden');
             categorySelection.classList.remove('hidden');
             modeSelection.classList.add('hidden');
         }
 
+        /**
+         * モード選択 (練習/挑戦)
+         * @param {string} mode 
+         */
         function selectMode(mode) {
             currentMode = mode;
             startGame();
         }
 
+        // --- ゲーム本体ロジック ---
 
-        // ... (rest of the game logic functions: startGame, loadQuiz, updateDisplay, checkInput, endGame)
-        
         function startGame() {
             if (currentQuizList.length === 0) {
                  alert('問題データがありません。セッションまたはカテゴリを選択し直してください。');
                  goHome();
                  return;
             }
-            // ... (rest of startGame logic)
+            
             score = 0;
             totalTypedChars = 0;
             misses = 0;
@@ -513,14 +526,17 @@
             timeLeft = 60;
             isPerfect = true;
             
+            // UI初期化
+            scoreDisplay.textContent = `Score: 0`;
+            
             if (currentMode === 'Practice') {
                 timerDisplay.textContent = '時間無制限';
                 timerDisplay.style.color = 'var(--primary-color)';
             } else {
                 timerDisplay.textContent = `Time: ${timeLeft}`;
+                timerDisplay.style.color = 'var(--text-color)';
             }
 
-            // ... (rest of startGame logic)
             loadQuiz();
             showScreen('game');
         }
@@ -532,10 +548,10 @@
             }
 
             const quiz = currentQuizList[currentQuizIndex];
-            currentText = quiz.en;
+            // ピリオドやクエスチョンマークを無視して比較するために、入力対象のテキストを整形
+            currentText = quiz.en.trim();
             questionJa.textContent = quiz.ja;
             
-            // ... (rest of loadQuiz logic)
             currentTyped = '';
             inputBox.value = '';
             inputBox.disabled = false;
@@ -551,7 +567,6 @@
         }
         
         function updateDisplay() {
-            // ... (rest of updateDisplay logic)
             questionEn.innerHTML = '';
             const typedLength = currentTyped.length;
             
@@ -561,6 +576,7 @@
                 if (i < typedLength) {
                     charSpan.classList.add('correct');
                 } else if (i === typedLength) {
+                    // 次に入力すべき文字の下線を引く
                     charSpan.style.borderBottom = '3px solid var(--primary-color)';
                 }
                 questionEn.appendChild(charSpan);
@@ -573,7 +589,7 @@
              if (timeLeft <= 10) {
                  timerDisplay.style.color = '#e74c3c'; // 赤色
              } else {
-                 timerDisplay.style.color = 'var(--primary-color)';
+                 timerDisplay.style.color = 'var(--text-color)';
              }
 
              if (timeLeft <= 0) {
@@ -582,12 +598,11 @@
          }
 
         inputBox.addEventListener('input', () => {
-             // ... (rest of checkInput logic)
             const inputText = inputBox.value;
 
             if (currentText.startsWith(inputText)) {
                 currentTyped = inputText;
-                totalTypedChars++; // タイプした文字数をカウント
+                totalTypedChars++;
                 updateDisplay();
 
                 if (currentTyped === currentText) {
@@ -602,17 +617,19 @@
                     isPerfect = true;
                     currentQuizIndex++;
                 }
-            } else if (!currentText.startsWith(inputText)) {
+            } else {
                 // タイプミス
                 misses++;
                 
                 if (currentMode === 'Challenge') {
-                   timeLeft = Math.max(0, timeLeft - 3);
+                   // 挑戦モードではミスタイプで時間を減らす
+                   timeLeft = Math.max(0, timeLeft - 3); 
                    timerDisplay.textContent = `Time: ${timeLeft}`;
                 }
 
                 isPerfect = false;
 
+                // 正しい部分まで巻き戻す
                 let correctPart = '';
                 for (let i = 0; i < inputText.length; i++) {
                     if (inputText[i] === currentText[i]) {
@@ -622,6 +639,8 @@
                     }
                 }
                 inputBox.value = correctPart;
+                currentTyped = correctPart; // currentTypedも更新
+                updateDisplay(); // 表示を即座に更新
                 
                 inputBox.classList.add('error');
                 setTimeout(() => inputBox.classList.remove('error'), 300);

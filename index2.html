@@ -92,7 +92,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        /* 修正: トップメニューに戻るボタン（常に表示されるように hidden を削除）*/
         .top-left-button {
             position: absolute;
             top: 15px;
@@ -156,39 +155,36 @@
             background-color: #c82333;
             border-color: #c82333;
         }
+        
+        .menu-selection-group {
+             margin-bottom: 20px;
+        }
 
         /* --- クイズ画面 --- */
         .timer-style {
             font-size: 2.5em; 
             font-weight: bold;
-            --timer-default-color: var(--primary-color);
-            --timer-default-border: var(--primary-color);
-            --timer-timeout-color: var(--incorrect-color);
-            
-            color: var(--timer-default-color);
+            color: var(--primary-color);
             margin-bottom: 20px;
             padding: 10px;
-            border: 3px solid var(--timer-default-border); 
+            border: 3px solid var(--primary-color); 
             border-radius: 10px;
             display: inline-block;
             background-color: #fff;
             transition: color 0.3s, border-color 0.3s;
         }
         
-        /* 修正: ゲーム画面のタイトル（カテゴリ名）のフォントサイズを縮小 */
         #quiz-category-title {
             font-size: 1.3rem; 
             margin-bottom: 15px;
             font-weight: normal;
         }
         
-        /* 修正: 何問中何問の数字を赤色に */
         .quiz-status-number {
-            color: var(--incorrect-color); /* 赤色 */
+            color: var(--incorrect-color);
             font-weight: bold;
         }
 
-        /* 修正: 日本語訳のフォントサイズを拡大 */
         .question-text {
             font-size: 1.6rem; 
             margin-bottom: 30px;
@@ -222,7 +218,7 @@
             justify-content: flex-start;
         }
         
-        /* 修正: 単語タイル（選択肢）のフォントサイズを拡大 */
+        /* 単語タイル（選択肢）のフォントサイズを拡大 */
         .word-item {
             cursor: pointer;
             background-color: #343a40; 
@@ -274,17 +270,6 @@
             background-color: #e9ecef; 
             font-weight: bold;
         }
-        .result-correct-text {
-            color: var(--correct-color);
-            font-weight: bold;
-        }
-        .result-incorrect-text {
-            color: var(--incorrect-color);
-            font-weight: bold;
-        }
-        .results-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa; 
-        }
         .results-table .result-correct-cell {
             color: var(--correct-color);
             font-weight: bold;
@@ -292,6 +277,9 @@
         .results-table .result-incorrect-cell {
             color: var(--incorrect-color);
             font-weight: bold;
+        }
+        .results-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa; 
         }
 
         /* レスポンシブ対応 */
@@ -319,12 +307,15 @@
     <div id="menu-container" class="container">
         <h1>並べ替えドリル</h1>
         
-        <div id="mode-selection">
-            <button id="mode-practice" class="category-button">練習モード</button>
-            <button id="mode-test" class="category-button">テストモード</button>
+        <div id="mode-selection" class="menu-selection-group">
+            <p>挑戦したい**モード**を選んでください。</p>
+            <button id="mode-practice-btn" class="category-button">練習モード</button>
+            <button id="mode-test-btn" class="category-button">テストモード</button>
         </div>
         
-        <div id="quiz-count-selection" class="hidden">
+        <div id="quiz-count-selection" class="menu-selection-group hidden">
+            <button id="back-to-mode-selection" class="btn back-link">モード選択に戻る</button>
+            <p style="margin-top: 20px;">次に、挑戦したい**問題数**を選んでください。</p>
             <div id="count-list">
                 <button id="count-5" class="category-button">5問</button>
                 <button id="count-10" class="category-button">10問</button>
@@ -332,8 +323,9 @@
             </div>
         </div>
 
-        <div id="category-selection" class="hidden">
-            <p>次に、挑戦したい**カテゴリ**を選んでください。</p>
+        <div id="category-selection" class="menu-selection-group hidden">
+            <button id="back-to-count-selection" class="btn back-link">問題数選択に戻る</button>
+            <p style="margin-top: 20px;">最後に、挑戦したい**カテゴリ**を選んでください。</p>
             <div id="category-list">
                 </div>
         </div>
@@ -359,8 +351,6 @@
             <div id="answer-area" class="word-box">
                 </div>
 
-            <div id="correct-answer-display" class="hidden"></div>
-            
             <p style="font-size: 0.9em; color: #7f8c8d; margin: 0;">【選択肢: タップで解答欄へ】</p>
             <div id="options-area" class="word-box">
                 </div>
@@ -376,16 +366,15 @@
 
     <script>
         // ==================================
-        // 定数 (テストモードの制限時間)
+        // 定数
         // ==================================
         const TIME_LIMIT_PER_QUIZ = 20;
         
         // ==================================
         // データソースの結合
-        // quizData.js の allQuizData と grammarQuizData.js の grammarQuizData を結合
         // ==================================
-        const allQuizData = (typeof allQuizData !== 'undefined') ? allQuizData : []; // quizData.js
-        const grammarQuizData = (typeof grammarQuizData !== 'undefined') ? grammarQuizData : []; // grammarQuizData.js
+        const allQuizData = (typeof allQuizData !== 'undefined') ? allQuizData : []; 
+        const grammarQuizData = (typeof grammarQuizData !== 'undefined') ? grammarQuizData : []; 
 
         const combinedQuizData = [...allQuizData, ...grammarQuizData]; // 意味順ドリルと文法項目別のデータを結合
 
@@ -396,9 +385,14 @@
         const menuContainer = document.getElementById('menu-container');
         const quizContainer = document.getElementById('quiz-container');
         
-        const backToMenuButton = document.getElementById('back-to-menu-button'); 
-        const modePracticeButton = document.getElementById('mode-practice');
-        const modeTestButton = document.getElementById('mode-test');
+        // 修正: モード選択ボタンのIDをHTMLに合わせて修正・取得
+        const modeSelection = document.getElementById('mode-selection');
+        const modePracticeButton = document.getElementById('mode-practice-btn');
+        const modeTestButton = document.getElementById('mode-test-btn');
+        
+        const backToModeSelectionButton = document.getElementById('back-to-mode-selection');
+        const backToCountSelectionButton = document.getElementById('back-to-count-selection');
+
         const quizCountSelection = document.getElementById('quiz-count-selection');
         const countList = document.getElementById('count-list');
         const categorySelection = document.getElementById('category-selection');
@@ -485,10 +479,15 @@
         }
         
         function resetMenuUI() {
-            modePracticeButton.style.opacity = '1.0';
-            modeTestButton.style.opacity = '1.0';
+            // モード選択に戻る
+            modeSelection.classList.remove('hidden');
             quizCountSelection.classList.add('hidden');
             categorySelection.classList.add('hidden');
+            
+            // ボタンの選択状態をリセット
+            modePracticeButton.style.opacity = '1.0';
+            modeTestButton.style.opacity = '1.0';
+            Array.from(countList.children).forEach(btn => btn.style.opacity = '1.0');
         }
 
         /**
@@ -496,7 +495,6 @@
          */
         function createCategoryButtons() {
             if (combinedQuizData.length === 0) {
-                console.error("問題データが読み込まれていません。");
                 categoryList.innerHTML = '<p style="color: red;">エラー: 問題データが読み込めません。</p>';
                 return;
             }
@@ -512,31 +510,61 @@
                 
                 button.textContent = buttonText;
                 button.className = 'category-button';
-                // フィルタリングのために元のカテゴリ名を保持
-                button.setAttribute('data-full-category-name', category); 
                 button.addEventListener('click', () => selectCategory(category));
                 categoryList.appendChild(button);
             });
             
+            // 初期画面はモード選択から
             showScreen('menu');
-        }
-
-        function selectMode(mode) {
-            currentMode = mode;
-            
-            modePracticeButton.style.opacity = mode === 'practice' ? '1.0' : '0.5';
-            modeTestButton.style.opacity = mode === 'test' ? '1.0' : '0.5';
-            
-            quizCountSelection.classList.remove('hidden');
+            modeSelection.classList.remove('hidden');
+            quizCountSelection.classList.add('hidden');
             categorySelection.classList.add('hidden');
         }
 
+        /**
+         * モード選択 (練習/テスト)
+         * @param {string} mode 
+         */
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            // ボタンの選択状態を更新
+            modePracticeButton.style.opacity = mode === 'practice' ? '1.0' : '0.5';
+            modeTestButton.style.opacity = mode === 'test' ? '1.0' : '0.5';
+            
+            // 画面遷移
+            modeSelection.classList.add('hidden');
+            quizCountSelection.classList.remove('hidden');
+            categorySelection.classList.add('hidden');
+            
+            // 練習モードの場合は全問（0）として扱い、問題数選択をスキップしてカテゴリ選択へ
+            if (currentMode === 'practice') {
+                 selectQuizCount(0); // 0は全問を意味する
+            }
+        }
+        
         function resetToModeSelection() {
+            // モード選択に戻る
             currentMode = '';
             selectedQuizCount = 0;
             resetMenuUI();
         }
         
+        function resetToCountSelection() {
+            // 問題数選択に戻る
+            modeSelection.classList.add('hidden');
+            quizCountSelection.classList.remove('hidden');
+            categorySelection.classList.add('hidden');
+            
+             // 練習モードの0問選択をリセット
+            selectedQuizCount = 0;
+            Array.from(countList.children).forEach(btn => btn.style.opacity = '1.0');
+        }
+        
+        /**
+         * 問題数選択
+         * @param {number} count 
+         */
         function selectQuizCount(count) {
             selectedQuizCount = count;
             Array.from(countList.children).forEach(btn => {
@@ -544,14 +572,16 @@
                 btn.style.opacity = btnCount === count ? '1.0' : '0.5';
             });
             
+            // 画面遷移
+            quizCountSelection.classList.add('hidden');
             categorySelection.classList.remove('hidden');
         }
         
         /**
-         * 修正: 結合されたデータからカテゴリをフィルタリングする
+         * カテゴリ選択 (ゲーム開始)
+         * @param {string} category 
          */
         function selectCategory(category) {
-            // combinedQuizDataから選択されたカテゴリの問題をフィルタリング
             availableQuizzes = combinedQuizData.filter(quiz => quiz.category === category);
             shuffleArray(availableQuizzes);
             
@@ -576,10 +606,10 @@
 
             currentQuizData = availableQuizzes[currentQuizIndex];
             isAnswered = false;
+            stopTimer(); // タイマーをリセット
             
             // UIリセット
             resultMessage.textContent = '';
-            
             checkButton.classList.remove('hidden');
             nextButton.classList.add('hidden');
             nextButton.textContent = '次の問題へ'; 
@@ -599,9 +629,7 @@
             const questionNumber = currentQuizIndex + 1;
             const totalQuestions = availableQuizzes.length;
             
-            // 何問中何問の数字を赤色にし、パターン名も表示
             const categoryText = currentQuizData.category;
-            // 'パターン X: ' の部分を削除して表示
             const displayCategoryText = categoryText.replace(/パターン \d+: /, '');
             
             quizCategoryTitle.innerHTML = `<span class="quiz-status-number">${questionNumber}</span>/<span class="quiz-status-number">${totalQuestions}</span> - ${displayCategoryText}`;
@@ -708,7 +736,7 @@
             // フィードバック表示
             if (isTimeout) {
                 resultMessage.className = 'incorrect';
-                resultMessage.textContent = '❌ 時間切れです！不正解。';
+                resultMessage.textContent = `❌ 時間切れです！正解は: ${correctAnswer}`;
                 answerArea.style.borderColor = incorrectColor;
                 answerArea.style.borderStyle = 'solid';
             } else {
@@ -719,19 +747,21 @@
                     answerArea.style.borderStyle = 'solid';
                 } else {
                     resultMessage.className = 'incorrect';
-                    resultMessage.textContent = '❌ 残念！不正解です。';
+                    resultMessage.textContent = `❌ 残念！不正解です。正解は: ${correctAnswer}`;
                     answerArea.style.borderColor = incorrectColor;
                     answerArea.style.borderStyle = 'solid';
                 }
             }
             
             // 結果を保存
+            const timeTaken = isTimeout ? 'TIMEOUT' : (TIME_LIMIT_PER_QUIZ - timeLeft);
+            
             testResults.push({
                 question: currentQuizData.ja,
                 correctAnswer: correctAnswer,
                 userAnswer: userAnswer,
                 isCorrect: isCorrect,
-                time: isTimeout ? 'TIMEOUT' : (TIME_LIMIT_PER_QUIZ - timeLeft)
+                time: timeTaken
             });
             
             if (currentQuizIndex === availableQuizzes.length - 1) {
@@ -764,7 +794,6 @@
             const summaryMessage = `正解数: ${correct} / ${total} 問 (正答率: ${accuracy}%)`;
             document.getElementById('test-summary-message').textContent = summaryMessage;
             
-            // タイトルをモードに応じて変更
             document.querySelector('#result-summary-container h2').textContent = 
                 currentMode === 'test' ? 'テスト結果' : '練習結果';
 
@@ -787,7 +816,6 @@
             testResults.forEach((res, index) => {
                 const resultText = res.isCorrect ? '正解' : '不正解';
                 const resultClass = res.isCorrect ? 'result-correct-cell' : 'result-incorrect-cell';
-                // 練習モードでは時間を表示しない
                 const timeCell = currentMode === 'test' 
                     ? `<td>${res.time === 'TIMEOUT' ? 'タイムアウト' : res.time + '秒'}</td>` 
                     : '';
@@ -796,7 +824,7 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td style="text-align: left;">${res.question}</td>
-                        <td class="result-correct-text" style="text-align: left;">${res.correctAnswer}</td>
+                        <td class="result-correct-cell" style="text-align: left;">${res.correctAnswer}</td>
                         <td style="text-align: left;">${res.userAnswer}</td>
                         <td class="${resultClass}">${resultText}</td>
                         ${timeCell}
@@ -822,7 +850,8 @@
         // ==================================
         modePracticeButton.addEventListener('click', () => selectMode('practice'));
         modeTestButton.addEventListener('click', () => selectMode('test'));
-        // 修正: backToModeSelectionButton のイベントリスナーを削除
+        backToModeSelectionButton.addEventListener('click', resetToModeSelection);
+        backToCountSelectionButton.addEventListener('click', resetToCountSelection);
         
         Array.from(countList.children).forEach(btn => {
             btn.addEventListener('click', () => {
