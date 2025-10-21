@@ -486,25 +486,28 @@
             // 修正: backToModeSelectionButton は削除
         }
 
+        // ★★★ 修正点 1: createCategoryButtons 関数 ★★★
         function createCategoryButtons() {
-            // ★ 変更点: allQuizData と grammarQuizData を統合 ★
-            if (typeof allQuizData === 'undefined' || allQuizData.length === 0) {
+            // allQuizData (const) を直接変更せず、ローカル変数でデータを結合する
+            
+            if (typeof allQuizData === 'undefined') {
                 console.error("問題データ (allQuizData) が読み込まれていません。");
                 categoryList.innerHTML = '<p style="color: red;">エラー: 問題データ(quizData.js)が読み込めません。</p>';
                 return;
             }
             
-            // grammarQuizData.js が読み込まれていれば、allQuizData に統合する
-            if (typeof grammarQuizData !== 'undefined') {
-                // concat で配列を結合
-                allQuizData = allQuizData.concat(grammarQuizData);
+            // allQuizData をコピーして新しい配列を作成
+            let combinedQuizData = [...allQuizData];
+            
+            // grammarQuizData.js が読み込まれていれば、結合する
+            if (typeof grammarQuizData !== 'undefined' && grammarQuizData.length > 0) {
+                combinedQuizData = combinedQuizData.concat(grammarQuizData);
             } else {
                 console.warn('grammarQuizData.js が読み込まれていないか、空です。');
             }
-            // ★ 変更ここまで ★
-
             
-            const categories = [...new Set(allQuizData.map(quiz => quiz.category))];
+            // グローバルな allQuizData の代わりに、結合した combinedQuizData を使用する
+            const categories = [...new Set(combinedQuizData.map(quiz => quiz.category))];
             categoryList.innerHTML = '';
             
             categories.forEach(category => {
@@ -512,7 +515,9 @@
                 // パターン番号を削除して表示 (文法項目別カテゴリは "パターン X:" がないのでそのまま表示される)
                 button.textContent = category.replace(/パターン \d+: /, ''); 
                 button.className = 'category-button';
-                button.addEventListener('click', () => selectCategory(category));
+                
+                // ★ 修正点: selectCategory に結合したデータ(combinedQuizData)を渡すようにする ★
+                button.addEventListener('click', () => selectCategory(category, combinedQuizData));
                 categoryList.appendChild(button);
             });
             
@@ -550,8 +555,12 @@
             categorySelection.classList.remove('hidden');
         }
         
-        function selectCategory(category) {
-            availableQuizzes = allQuizData.filter(quiz => quiz.category === category);
+        // ★★★ 修正点 2: selectCategory 関数 ★★★
+        // 第2引数 (dataToUse) で、ボタン作成時に使用した結合済みデータを受け取る
+        function selectCategory(category, dataToUse) {
+            
+            // グローバルな allQuizData の代わりに、渡された dataToUse からカテゴリを絞り込む
+            availableQuizzes = dataToUse.filter(quiz => quiz.category === category);
             shuffleArray(availableQuizzes);
             
             if (selectedQuizCount > 0) {
@@ -603,7 +612,7 @@
             
             japaneseQuestion.textContent = currentQuizData.ja;
 
-            // 句読点（ピリオド, クエスチョンマーク, コンマ）をすべて独立した単語として扱う
+            // 句読点（ピリオド, クエスチマーク, コンマ）をすべて独立した単語として扱う
             const tempSentence = currentQuizData.en.replace(/([.?!,])/g, ' $1 ').trim();
             const rawWords = tempSentence.split(/\s+/).filter(word => word.length > 0);
             
@@ -809,6 +818,7 @@
             currentMode = '';
             selectedQuizCount = 0;
             testResults = [];
+            // ★ 修正点: データを再結合させるため、createCategoryButtons を再度呼び出す
             createCategoryButtons();
         }
 
