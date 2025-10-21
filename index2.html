@@ -7,6 +7,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="quizData.js"></script> 
+    <script src="grammarQuizData.js"></script> 
 
     <style>
         /* 基本設定 */
@@ -380,6 +381,16 @@
         const TIME_LIMIT_PER_QUIZ = 20;
         
         // ==================================
+        // データソースの結合
+        // quizData.js の allQuizData と grammarQuizData.js の grammarQuizData を結合
+        // ==================================
+        const allQuizData = (typeof allQuizData !== 'undefined') ? allQuizData : []; // quizData.js
+        const grammarQuizData = (typeof grammarQuizData !== 'undefined') ? grammarQuizData : []; // grammarQuizData.js
+
+        const combinedQuizData = [...allQuizData, ...grammarQuizData]; // 意味順ドリルと文法項目別のデータを結合
+
+        
+        // ==================================
         // DOM要素の取得
         // ==================================
         const menuContainer = document.getElementById('menu-container');
@@ -388,7 +399,6 @@
         const backToMenuButton = document.getElementById('back-to-menu-button'); 
         const modePracticeButton = document.getElementById('mode-practice');
         const modeTestButton = document.getElementById('mode-test');
-        // 修正: backToModeSelectionButton は削除
         const quizCountSelection = document.getElementById('quiz-count-selection');
         const countList = document.getElementById('count-list');
         const categorySelection = document.getElementById('category-selection');
@@ -465,15 +475,12 @@
             if (screenId === 'menu') {
                 menuContainer.classList.remove('hidden');
                 quizContainer.classList.add('hidden');
-                // 修正: backToMenuButton は HTML で hidden クラスが削除されたため、
-                // JSでの表示/非表示制御は不要だが、念のためメニュー表示時に処理をしない
                 resetMenuUI();
             } else if (screenId === 'quiz') {
                 menuContainer.classList.add('hidden');
                 quizContainer.classList.remove('hidden');
                 resultSummaryContainer.classList.add('hidden');
                 questionArea.classList.remove('hidden');
-                // backToMenuButton は常に表示
             }
         }
         
@@ -482,24 +489,31 @@
             modeTestButton.style.opacity = '1.0';
             quizCountSelection.classList.add('hidden');
             categorySelection.classList.add('hidden');
-            // 修正: backToModeSelectionButton は削除
         }
 
+        /**
+         * 修正: quizData.jsとgrammarQuizData.jsを結合したデータからカテゴリボタンを生成する
+         */
         function createCategoryButtons() {
-            if (typeof allQuizData === 'undefined' || allQuizData.length === 0) {
-                console.error("問題データ (allQuizData) が読み込まれていません。");
+            if (combinedQuizData.length === 0) {
+                console.error("問題データが読み込まれていません。");
                 categoryList.innerHTML = '<p style="color: red;">エラー: 問題データが読み込めません。</p>';
                 return;
             }
             
-            const categories = [...new Set(allQuizData.map(quiz => quiz.category))];
+            // 結合されたデータからユニークなカテゴリを抽出
+            const categories = [...new Set(combinedQuizData.map(quiz => quiz.category))];
             categoryList.innerHTML = '';
             
             categories.forEach(category => {
                 const button = document.createElement('button');
-                // パターン番号を削除して表示
-                button.textContent = category.replace(/パターン \d+: /, ''); 
+                // 'パターン X: ' の部分を削除して表示（意味順ドリルカテゴリの場合）
+                let buttonText = category.replace(/パターン \d+: /, ''); 
+                
+                button.textContent = buttonText;
                 button.className = 'category-button';
+                // フィルタリングのために元のカテゴリ名を保持
+                button.setAttribute('data-full-category-name', category); 
                 button.addEventListener('click', () => selectCategory(category));
                 categoryList.appendChild(button);
             });
@@ -513,16 +527,11 @@
             modePracticeButton.style.opacity = mode === 'practice' ? '1.0' : '0.5';
             modeTestButton.style.opacity = mode === 'test' ? '1.0' : '0.5';
             
-            // 修正: モード選択に戻るボタンを削除したため、この処理は不要
-
-            // 練習モードでも問題数選択を表示
             quizCountSelection.classList.remove('hidden');
             categorySelection.classList.add('hidden');
         }
 
         function resetToModeSelection() {
-            // 修正: モード選択に戻るボタンが削除され、常に「ゲーム選択に戻る」があるため、この関数は不要だが、
-            // 互換性のため currentMode のリセットと UI リセットのみ行う（今は使われていない）
             currentMode = '';
             selectedQuizCount = 0;
             resetMenuUI();
@@ -538,11 +547,16 @@
             categorySelection.classList.remove('hidden');
         }
         
+        /**
+         * 修正: 結合されたデータからカテゴリをフィルタリングする
+         */
         function selectCategory(category) {
-            availableQuizzes = allQuizData.filter(quiz => quiz.category === category);
+            // combinedQuizDataから選択されたカテゴリの問題をフィルタリング
+            availableQuizzes = combinedQuizData.filter(quiz => quiz.category === category);
             shuffleArray(availableQuizzes);
             
             if (selectedQuizCount > 0) {
+                // 選択された問題数でクイズリストを切り詰める
                 availableQuizzes = availableQuizzes.slice(0, selectedQuizCount);
             }
             
@@ -587,7 +601,10 @@
             
             // 何問中何問の数字を赤色にし、パターン名も表示
             const categoryText = currentQuizData.category;
-            quizCategoryTitle.innerHTML = `<span class="quiz-status-number">${questionNumber}</span>/<span class="quiz-status-number">${totalQuestions}</span> - ${categoryText}`;
+            // 'パターン X: ' の部分を削除して表示
+            const displayCategoryText = categoryText.replace(/パターン \d+: /, '');
+            
+            quizCategoryTitle.innerHTML = `<span class="quiz-status-number">${questionNumber}</span>/<span class="quiz-status-number">${totalQuestions}</span> - ${displayCategoryText}`;
             
             japaneseQuestion.textContent = currentQuizData.ja;
 
@@ -736,7 +753,6 @@
 
         function showResult() {
             stopTimer();
-            // backToMenuButton は常に表示されているため制御は不要
 
             questionArea.classList.add('hidden');
             resultSummaryContainer.classList.remove('hidden');
